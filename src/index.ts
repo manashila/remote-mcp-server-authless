@@ -28,10 +28,12 @@ function createServer() {
         const responseText = await response.text();
 
         if (!response.ok) {
-          throw new Error(
-            "Data service returned HTTP " + response.status
-          );
-        }
+  throw new Error(
+    "URL: " + response.url +
+    " | HTTP: " + response.status +
+    " | Response: " + responseText.slice(0, 500)
+  );
+}
 
         const data = JSON.parse(responseText);
 
