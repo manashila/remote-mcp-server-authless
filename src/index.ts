@@ -4,7 +4,7 @@ import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
 
 const TODO_DATA_URL =
-  "https://todo-json-connector.manashila189.workers.dev/";
+  "https://raw.githubusercontent.com/manashila/remote-mcp-server-authless/main/data/todos.json";
 
 function createServer() {
   const server = new McpServer({
