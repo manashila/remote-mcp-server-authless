@@ -1,0 +1,52 @@
+
+name: Sync ToDo Data from Google Sheets
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-todo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Fetch JSON from Google Apps Script
+        run: |
+          mkdir -p data
+
+          curl --fail --silent --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 2 \
+            --max-time 60 \
+            "https://script.google.com/macros/s/AKfycbwKnOMKMMxhphgHMo-UdPBeNnJfjSt_0QB_ciFP6qNM5CpV9tyHkVmv6Ece1mc620IRNg/exec?action=data" \
+            -o data/todos.json
+
+          # Validate the JSON response
+          jq -e '.success == true and (.rows | type == "array")' \
+            data/todos.json > /dev/null
+
+          echo "ToDo JSON downloaded successfully"
+
+      - name: Save JSON to GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/todos.json
+
+          if git diff --cached --quiet; then
+            echo "No changes in ToDo data"
+            exit 0
+          fi
+
+          git commit -m "Refresh Google Sheets ToDo data"
+          git push
